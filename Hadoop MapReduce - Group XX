@@ -1,0 +1,50 @@
+#Hadoop MapReduce - Group XX
+Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
+
+# First, we created a bucket named stackoverflow-1 and uploaded the dataset
+# Then we created EC2 instance (master, slave1, slave2) from an existing AMI.
+
+1) sudo nano /etc/hosts
+172.31.27.188 master
+172.31.28.147 slave 1
+172.31.29.250 slave 2
+
+# after connecting to our master instance, we switched our user from root to Hadoop.
+2) sudo su - hadoop
+
+# then, we started HDFS services including namenodes, datanodes, secondary namenodes, resourcemanager, nodemanagers
+3) start-all.sh
+
+4) cd IST3134/
+
+5) mkdir ~/IST3134/stackoverflow
+
+6) aws s3 cp s3://stackoverflow-1/Questions.csv ~/IST3134/stackoverflow
+
+7) hadoop fs -put Questions.csv /user/hadoop/IST3134/stackoverflow
+
+8) mkdir ~/IST3134/stackoverflow/stubs
+
+9) cd stubs
+
+10) nano WordCountMapper.java
+
+11) nano WordCountReducer.java
+
+12) nano WordCount.java
+
+13) cd ~/IST3134/stackoverflow
+
+14) javac -classpath `hadoop classpath` stubs/*.java
+
+15) jar cvf so.jar stubs/*.class
+
+16) hadoop jar so.jar stubs.WordCount stackoverflow wordcounts
+
+Found 2 items
+-rw-r--r--   2 hadoop supergroup          0 2025-07-15 04:14 wordcounts/_SUCCESS
+-rw-r--r--   2 hadoop supergroup      92383 2025-07-15 04:14 wordcounts/part-r-00000
+
+17) hadoop fs -cat wordcounts/part-r-00000 | less
+
+18) hadoop fs -cat wordcounts/part-r-00000 | sort -k2 -nr | less
