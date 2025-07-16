@@ -5,9 +5,9 @@ Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
 # Then we created EC2 instance (master, slave1, slave2) from an existing AMI.
 
 1) sudo nano /etc/hosts
-172.31.27.188 master
-172.31.28.147 slave 1
-172.31.29.250 slave 2
+172.31.95.162 master
+172.31.93.112 slave1
+172.31.95.7 slave2
 
 # after connecting to our master instance, we switched our user from root to Hadoop.
 2) sudo su - hadoop
