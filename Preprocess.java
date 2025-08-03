@@ -1,84 +1,68 @@
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 
 public class Preprocess {
 
-    // Basic English stop word list
-    static Set<String> stopWords = new HashSet<>(Arrays.asList(
-        "a", "an", "the", "and", "or", "in", "on", "at", "for", "with", 
-        "is", "was", "are", "were", "be", "to", "from", "that", "this", 
-        "it", "of", "by", "as", "but", "if", "then", "so", "not", "do"
-    ));
-
-    // Clean a text field: lowercase, remove punctuation, remove stopwords, trim
-    public static String cleanText(String text) {
-        if (text == null) return "";
-        String[] words = text.toLowerCase()
-                             .replaceAll("[^a-z0-9 ]", " ")
-                             .trim()
-                             .replaceAll("\\s+", " ")
-                             .split(" ");
-
-        StringBuilder cleaned = new StringBuilder();
-        for (String word : words) {
-            if (!stopWords.contains(word) && !word.trim().isEmpty()) {
-                cleaned.append(word).append(" ");
-            }
-        }
-        return cleaned.toString().trim();
-    }
-
     public static void main(String[] args) {
-        String inputFile = "Questions.csv";            
-        String outputFile = "cleaned_Questions.csv";    
+        String inputFile = "Questions.csv";
+        String outputFile = "cleaned_Questions.txt";
+        String stopwordFile = "stopwords.txt";
 
-        try (
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-        ) {
-            String line = reader.readLine(); // Read header
-            if (line == null) {
-                System.out.println("Empty file.");
-                return;
-            }
+        Set<String> stopWords = loadStopWords(stopwordFile);
 
-            // Find indexes of "Title" and "Body" columns
-            String[] headers = line.split(",");
-            int titleIndex = -1, bodyIndex = -1;
-            for (int i = 0; i < headers.length; i++) {
-                String col = headers[i].trim().toLowerCase();
-                if (col.equals("title")) titleIndex = i;
-                if (col.equals("body")) bodyIndex = i;
-            }
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
 
-            if (titleIndex == -1 || bodyIndex == -1) {
-                System.out.println("Error: 'Title' or 'Body' column not found.");
-                return;
-            }
-
-            // Write new header
-            writer.write("Title,Body");
-            writer.newLine();
-
-            // Process each line
+            String line = reader.readLine(); // skip header
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(",", -1);  // -1 keeps empty columns
-                if (fields.length <= Math.max(titleIndex, bodyIndex)) continue;
+                String[] parts = line.split("\",\"", -1);
 
-                String rawTitle = fields[titleIndex];
-                String rawBody = fields[bodyIndex];
+                if (parts.length >= 2) {
+                    String title = parts[0].replaceAll("^\"|\"$", "");
+                    String body = parts[1].replaceAll("^\"|\"$", "");
 
-                String cleanTitle = cleanText(rawTitle);
-                String cleanBody = cleanText(rawBody);
+                    String combined = title + " " + body;
 
-                writer.write("\"" + cleanTitle + "\",\"" + cleanBody + "\"");
-                writer.newLine();
+                    // Remove HTML tags
+                    combined = combined.replaceAll("<[^>]*>", " ");
+
+                    // Lowercase
+                    combined = combined.toLowerCase();
+
+                    // Remove punctuation
+                    combined = combined.replaceAll("[^a-z0-9\\s]", " ");
+
+                    // Tokenize and remove stopwords
+                    StringBuilder cleaned = new StringBuilder();
+                    for (String word : combined.split("\\s+")) {
+                        if (!stopWords.contains(word.trim()) && !word.trim().isEmpty()) {
+                            cleaned.append(word).append(" ");
+                        }
+                    }
+
+                    writer.write(cleaned.toString().trim());
+                    writer.newLine();
+                }
             }
 
-            System.out.println("✅ Preprocessing complete. Output saved to: " + outputFile);
+            System.out.println("✅ Preprocessing complete. Output saved to " + outputFile);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Set<String> loadStopWords(String filename) {
+        Set<String> stopWords = new HashSet<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String word;
+            while ((word = reader.readLine()) != null) {
+                stopWords.add(word.trim().toLowerCase());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return stopWords;
     }
 }
