@@ -5,64 +5,81 @@ import java.util.regex.*;
 public class Preprocess {
 
     public static void main(String[] args) {
-        String inputFile = "Questions.csv";
-        String outputFile = "cleaned_Questions.txt";
-        String stopwordFile = "stopwords.txt";
+        if (args.length != 3) {
+            System.out.println("Usage: java Preprocess <input.csv> <stopwords.txt> <output.txt>");
+            return;
+        }
 
-        Set<String> stopWords = loadStopWords(stopwordFile);
+        String inputCsv = args[0];
+        String stopwordsFile = args[1];
+        String outputFile = args[2];
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+        Set<String> stopwords = loadStopwords(stopwordsFile);
 
-            String line = reader.readLine(); // skip header
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("\",\"", -1);
+        try (BufferedReader br = new BufferedReader(new FileReader(inputCsv));
+             BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile))) {
 
-                if (parts.length >= 2) {
-                    String title = parts[0].replaceAll("^\"|\"$", "");
-                    String body = parts[1].replaceAll("^\"|\"$", "");
+            String line;
+            // Skip header
+            br.readLine();
 
-                    String combined = title + " " + body;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",", -1);  // allows empty fields
+                if (parts.length < 2) continue;
 
-                    // Remove HTML tags
-                    combined = combined.replaceAll("<[^>]*>", " ");
+                String title = parts[0];
+                String body = parts[1];
 
-                    // Lowercase
-                    combined = combined.toLowerCase();
+                String combined = title + " " + body;
+                String cleaned = cleanText(combined);
+                List<String> words = tokenize(cleaned);
 
-                    // Remove punctuation
-                    combined = combined.replaceAll("[^a-z0-9\\s]", " ");
-
-                    // Tokenize and remove stopwords
-                    StringBuilder cleaned = new StringBuilder();
-                    for (String word : combined.split("\\s+")) {
-                        if (!stopWords.contains(word.trim()) && !word.trim().isEmpty()) {
-                            cleaned.append(word).append(" ");
-                        }
+                for (String word : words) {
+                    word = word.toLowerCase();
+                    if (!stopwords.contains(word) && word.length() > 1 && !isNumeric(word)) {
+                        bw.write(word);
+                        bw.newLine();
                     }
-
-                    writer.write(cleaned.toString().trim());
-                    writer.newLine();
                 }
             }
 
-            System.out.println("✅ Preprocessing complete. Output saved to " + outputFile);
+            System.out.println("Preprocessing complete. Output written to: " + outputFile);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static Set<String> loadStopWords(String filename) {
-        Set<String> stopWords = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String word;
-            while ((word = reader.readLine()) != null) {
-                stopWords.add(word.trim().toLowerCase());
+    // Load stopwords into a HashSet
+    public static Set<String> loadStopwords(String stopwordsFile) {
+        Set<String> stopwords = new HashSet<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(stopwordsFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                stopwords.add(line.trim().toLowerCase());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return stopWords;
+        return stopwords;
+    }
+
+    // Remove HTML, punctuation, and special characters
+    public static String cleanText(String text) {
+        text = text.replaceAll("<[^>]*>", " "); // remove HTML tags
+        text = text.replaceAll("&[^;]+;", " "); // remove HTML entities like &amp;
+        text = text.replaceAll("[^a-zA-Z0-9 ]", " "); // remove punctuation/symbols
+        text = text.replaceAll("\\s+", " "); // normalize whitespace
+        return text;
+    }
+
+    // Tokenize text into individual words
+    public static List<String> tokenize(String text) {
+        return Arrays.asList(text.trim().split(" "));
+    }
+
+    // Check if word is numeric
+    public static boolean isNumeric(String str) {
+        return str.matches("\\d+");
     }
 }
