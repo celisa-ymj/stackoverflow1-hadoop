@@ -1,7 +1,7 @@
 #Hadoop MapReduce - Group XX
 Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
 
-# First, we created a bucket named stackoverflow-1 and uploaded the dataset
+# First, we created a S3 bucket named stackoverflow-1
 # Then we created EC2 instance (master, slave1, slave2) from an existing AMI.
 
 1) sudo nano /etc/hosts
@@ -20,6 +20,16 @@ Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
 5) mkdir ~/IST3134/stackoverflow
 
 6) aws s3 cp s3://stackoverflow-1/Questions.csv ~/IST3134/stackoverflow
+
+7) nano Preprocess.java
+
+8) javac Preprocess.java
+
+9) java Preprocess
+
+
+
+
 
 7) hadoop fs -put Questions.csv /user/hadoop/IST3134/stackoverflow
 
