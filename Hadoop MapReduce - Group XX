@@ -25,36 +25,170 @@ Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
 
 8) javac Preprocess.java
 
-9) java Preprocess
+9) java Preprocess Questions.csv stopwords.txt cleaned_Questions.txt
 
+---
+Preprocessing complete. Output written to: cleaned_Questions.txt
+---
 
+10) aws s3 cp cleaned_Questions.txt s3://stackoverflow-1/
 
+---
+upload: ./cleaned_Questions.txt to s3://stackoverflow-1/cleaned_Questions.txt
+---
 
+11) hadoop fs -mkdir -p /user/hadoop/IST3134/stackoverflow
 
-7) hadoop fs -put Questions.csv /user/hadoop/IST3134/stackoverflow
+(preventive measure - remove existing datasets)
+hadoop fs -rm /user/hadoop/IST3134/stackoverflow/cleaned_Questions.txt
 
-8) mkdir ~/IST3134/stackoverflow/stubs
+12) hadoop fs -put ~/IST3134/stackoverflow/cleaned_Questions.txt /user/hadoop/IST3134/stackoverflow/
 
-9) cd stubs
+13) hadoop fs -ls /user/hadoop/IST3134/stackoverflow/
 
-10) nano WordCountMapper.java
+---
+Found 1 items
+-rw-r--r--   2 hadoop supergroup  233131811 2025-08-03 16:12 /user/hadoop/IST3134/stackoverflow/cleaned_Questions.txt
+---
 
-11) nano WordCountReducer.java
+(rm -r stubs/)
 
-12) nano WordCount.java
+14) mkdir ~/IST3134/stackoverflow/stubs
 
-13) cd ~/IST3134/stackoverflow
+15) cd stubs
 
-14) javac -classpath `hadoop classpath` stubs/*.java
+16) nano WordCountMapper.java
 
-15) jar cvf so.jar stubs/*.class
+17) nano WordCountReducer.java
 
-16) hadoop jar so.jar stubs.WordCount stackoverflow wordcounts
+18) nano WordCount.java
 
+19) cd ~/IST3134/stackoverflow
+
+20) javac -classpath `hadoop classpath` stubs/*.java
+
+21) jar cvf so.jar stubs/*.class
+
+---
+added manifest
+adding: stubs/WordCount.class(in = 1483) (out= 796)(deflated 46%)
+adding: stubs/WordCountMapper.class(in = 2547) (out= 1157)(deflated 54%)
+adding: stubs/WordCountReducer.class(in = 1608) (out= 674)(deflated 58%)
+---
+
+(as a preventive measure - remove any old files)
+hadoop fs -rm -r /user/hadoop/wordcounts
+
+22) hadoop jar so.jar stubs.WordCount stackoverflow wordcounts
+
+---
+2025-08-03 16:14:20,093 INFO client.DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at master/172.31.95.162:8032
+2025-08-03 16:14:20,557 WARN mapreduce.JobResourceUploader: Hadoop command-line option parsing not performed. Implement the Tool interface and execute your application with ToolRunner to remedy this.
+2025-08-03 16:14:20,573 INFO mapreduce.JobResourceUploader: Disabling Erasure Coding for path: /tmp/hadoop-yarn/staging/hadoop/.staging/job_1754226986564_0004
+2025-08-03 16:14:20,865 INFO input.FileInputFormat: Total input files to process : 1
+2025-08-03 16:14:20,964 INFO mapreduce.JobSubmitter: number of splits:15
+2025-08-03 16:14:21,119 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1754226986564_0004
+2025-08-03 16:14:21,119 INFO mapreduce.JobSubmitter: Executing with tokens: []
+2025-08-03 16:14:21,306 INFO conf.Configuration: resource-types.xml not found
+2025-08-03 16:14:21,306 INFO resource.ResourceUtils: Unable to find 'resource-types.xml'.
+2025-08-03 16:14:21,370 INFO impl.YarnClientImpl: Submitted application application_1754226986564_0004
+2025-08-03 16:14:21,406 INFO mapreduce.Job: The url to track the job: http://master:8088/proxy/application_1754226986564_0004/
+2025-08-03 16:14:21,407 INFO mapreduce.Job: Running job: job_1754226986564_0004
+2025-08-03 16:14:28,517 INFO mapreduce.Job: Job job_1754226986564_0004 running in uber mode : false
+2025-08-03 16:14:28,518 INFO mapreduce.Job:  map 0% reduce 0%
+2025-08-03 16:14:54,731 INFO mapreduce.Job:  map 10% reduce 0%
+2025-08-03 16:14:55,735 INFO mapreduce.Job:  map 20% reduce 0%
+2025-08-03 16:14:58,768 INFO mapreduce.Job:  map 40% reduce 0%
+2025-08-03 16:14:59,774 INFO mapreduce.Job:  map 52% reduce 0%
+2025-08-03 16:15:00,779 INFO mapreduce.Job:  map 54% reduce 0%
+2025-08-03 16:15:05,806 INFO mapreduce.Job:  map 65% reduce 0%
+2025-08-03 16:15:06,812 INFO mapreduce.Job:  map 67% reduce 0%
+2025-08-03 16:15:07,817 INFO mapreduce.Job:  map 73% reduce 0%
+2025-08-03 16:15:08,822 INFO mapreduce.Job:  map 77% reduce 0%
+2025-08-03 16:15:09,827 INFO mapreduce.Job:  map 86% reduce 0%
+2025-08-03 16:15:10,832 INFO mapreduce.Job:  map 100% reduce 0%
+2025-08-03 16:15:11,838 INFO mapreduce.Job:  map 100% reduce 100%
+2025-08-03 16:15:11,845 INFO mapreduce.Job: Job job_1754226986564_0004 completed successfully
+2025-08-03 16:15:11,972 INFO mapreduce.Job: Counters: 55
+        File System Counters
+                FILE: Number of bytes read=146703
+                FILE: Number of bytes written=4713696
+                FILE: Number of read operations=0
+                FILE: Number of large read operations=0
+                FILE: Number of write operations=0
+                HDFS: Number of bytes read=1923740988
+                HDFS: Number of bytes written=92383
+                HDFS: Number of read operations=50
+                HDFS: Number of large read operations=0
+                HDFS: Number of write operations=2
+                HDFS: Number of bytes read erasure-coded=0
+        Job Counters 
+                Killed map tasks=1
+                Launched map tasks=16
+                Launched reduce tasks=1
+                Data-local map tasks=16
+                Total time spent by all maps in occupied slots (ms)=493864
+                Total time spent by all reduces in occupied slots (ms)=11227
+                Total time spent by all map tasks (ms)=493864
+                Total time spent by all reduce tasks (ms)=11227
+                Total vcore-milliseconds taken by all map tasks=493864
+                Total vcore-milliseconds taken by all reduce tasks=11227
+                Total megabyte-milliseconds taken by all map tasks=505716736
+                Total megabyte-milliseconds taken by all reduce tasks=11496448
+        Map-Reduce Framework
+                Map input records=42420636
+                Map output records=7088
+                Map output bytes=132440
+                Map output materialized bytes=146787
+                Input split bytes=1635
+                Combine input records=0
+                Combine output records=0
+                Reduce input groups=4660
+                Reduce shuffle bytes=146787
+                Reduce input records=7088
+                Reduce output records=4660
+                Spilled Records=14176
+                Shuffled Maps =15
+                Failed Shuffles=0
+                Merged Map outputs=15
+                GC time elapsed (ms)=5443
+                CPU time spent (ms)=71590
+                Physical memory (bytes) snapshot=6309421056
+                Virtual memory (bytes) snapshot=40669032448
+                Total committed heap usage (bytes)=5265424384
+                Peak Map Physical memory (bytes)=596037632
+                Peak Map Virtual memory (bytes)=2546614272
+                Peak Reduce Physical memory (bytes)=213942272
+                Peak Reduce Virtual memory (bytes)=2548551680
+        Shuffle Errors
+                BAD_ID=0
+                CONNECTION=0
+                IO_ERROR=0
+                WRONG_LENGTH=0
+                WRONG_MAP=0
+                WRONG_REDUCE=0
+        File Input Format Counters 
+                Bytes Read=1923739353
+        File Output Format Counters 
+                Bytes Written=92383
+---
+
+23) hadoop fs -ls /user/hadoop/wordcounts
+
+---
 Found 2 items
--rw-r--r--   2 hadoop supergroup          0 2025-07-15 04:14 wordcounts/_SUCCESS
--rw-r--r--   2 hadoop supergroup      92383 2025-07-15 04:14 wordcounts/part-r-00000
+-rw-r--r--   2 hadoop supergroup          0 2025-08-03 16:15 /user/hadoop/wordcounts/_SUCCESS
+-rw-r--r--   2 hadoop supergroup      92383 2025-08-03 16:15 /user/hadoop/wordcounts/part-r-00000
+---
 
-17) hadoop fs -cat wordcounts/part-r-00000 | less
+hadoop fs -ls /user/hadoop/IST3134/stackoverflow/
 
-18) hadoop fs -cat wordcounts/part-r-00000 | sort -k2 -nr | less
+---
+Found 1 items
+-rw-r--r--   2 hadoop supergroup  233131811 2025-08-03 16:12 /user/hadoop/IST3134/stackoverflow/cleaned_Questions.txt
+---
+
+
+23) hadoop fs -cat wordcounts/part-r-00000 | less
+
+24) hadoop fs -cat wordcounts/part-r-00000 | sort -k2 -nr | less
