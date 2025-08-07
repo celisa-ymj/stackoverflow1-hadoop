@@ -1,0 +1,109 @@
+#Hadoop MapReduce
+Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
+
+# First, we created EC2 instance (master, slave1, slave2) from an existing AMI.
+
+1) sudo nano /etc/hosts
+172.31.95.162 master
+172.31.93.112 slave1
+172.31.95.7 slave2
+
+# after connecting to our master instance, we switched our user from root to Hadoop.
+2) sudo su - hadoop
+
+# then, we started HDFS services including namenodes, datanodes, secondary namenodes, resourcemanager, nodemanagers
+3) start-all.sh
+
+4) mkdir kaggle
+
+5) nano kaggle.json
+
+# Create kaggle api token on kaggle website, a json file will automatically download, copy paste the content into the nano kaggle.json file
+mv kaggle.json kaggle/
+
+6) pip3 install kaggle --user
+
+---
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+     |████████████████████████████████| 181 kB 19.6 MB/s 
+Collecting tqdm
+  Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+     |████████████████████████████████| 78 kB 11.7 MB/s 
+Requirement already satisfied: setuptools>=21.0.0 in /usr/lib/python3/dist-packages (from kaggle) (45.2.0)
+Collecting protobuf
+  Downloading protobuf-5.29.5-cp38-abi3-manylinux2014_x86_64.whl (319 kB)
+     |████████████████████████████████| 319 kB 83.1 MB/s 
+Requirement already satisfied: certifi>=14.05.14 in /usr/lib/python3/dist-packages (from kaggle) (2019.11.28)
+Collecting bleach
+  Downloading bleach-6.1.0-py3-none-any.whl (162 kB)
+     |████████████████████████████████| 162 kB 105.2 MB/s 
+Collecting charset-normalizer
+  Downloading charset_normalizer-3.4.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+     |████████████████████████████████| 147 kB 62.1 MB/s 
+Collecting python-slugify
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Requirement already satisfied: idna in /usr/lib/python3/dist-packages (from kaggle) (2.8)
+Collecting text-unidecode
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+     |████████████████████████████████| 78 kB 9.6 MB/s 
+Requirement already satisfied: webencodings in /usr/lib/python3/dist-packages (from kaggle) (0.5.1)
+Requirement already satisfied: python-dateutil>=2.5.3 in /usr/lib/python3/dist-packages (from kaggle) (2.7.3)
+Requirement already satisfied: requests in /usr/lib/python3/dist-packages (from kaggle) (2.22.0)
+Requirement already satisfied: urllib3>=1.15.1 in /usr/lib/python3/dist-packages (from kaggle) (1.25.8)
+Requirement already satisfied: six>=1.10 in /usr/lib/python3/dist-packages (from kaggle) (1.14.0)
+Installing collected packages: tqdm, protobuf, bleach, charset-normalizer, text-unidecode, python-slugify, kaggle
+Successfully installed bleach-6.1.0 charset-normalizer-3.4.2 kaggle-1.7.4.5 protobuf-5.29.5 python-slugify-8.0.4 text-unidecode-1.3 tqdm-4.67.1
+---
+
+7) chmod 600 kaggle/kaggle.json
+
+8) export KAGGLE_CONFIG_DIR=~/kaggle
+
+9) kaggle datasets download -d stackoverflow/stacksample
+# the data will start downloading
+
+---
+Dataset URL: https://www.kaggle.com/datasets/stackoverflow/stacksample
+License(s): other
+Downloading stacksample.zip to /home/hadoop
+ 99%|█████████████████████████████████████████████████████████████▍| 1.10G/1.11G [00:05<00:00, 116MB/s]
+100%|██████████████████████████████████████████████████████████████| 1.11G/1.11G [00:05<00:00, 216MB/s]
+---
+
+10) ls
+
+11) unzip stacksample.zip
+
+# to upload the file into the hadoop
+12) hdfs dfs -mkdir -p /user/hadoop/input
+
+13) hdfs dfs -put Questions.csv /user/hadoop/input/
+
+14) hdfs dfs -ls /user/hadoop/input
+
+---
+Found 1 items
+-rw-r--r--   2 hadoop supergroup 1923682009 2025-08-07 17:39 /user/hadoop/input/Questions.csv
+---
+
+15) mkdir -p ~/wordcount/src
+
+16) cd ~/wordcount
+
+17) nano src/WordCountMapper.java
+
+18) nano src/WordCountReducer.java
+
+19) nano src/WordCountDriver.java
+
+# compile, package, run, and view top 100, make sure to change the output file name accordingly if you change it
+20) mkdir -p build
+
+21) javac -classpath $(hadoop classpath) -d build src/*.java 
+
+23) jar -cvf wordcount.jar -C build/ .
+
+24) hadoop jar wordcount.jar WordCountDriver /user/hadoop/input/Questions.csv /user/hadoop/output/wordcount_final
+
+25) hadoop fs -cat /user/hadoop/output/wordcount_final2/part-r-00000 | sort -k2 -nr | head -n 100
