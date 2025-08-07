@@ -104,6 +104,17 @@ Found 1 items
 
 23) jar -cvf wordcount.jar -C build/ .
 
+---
+added manifest
+adding: WordCountMapper.class(in = 6434) (out= 3548)(deflated 44%)
+adding: WordCountDriver.class(in = 1427) (out= 779)(deflated 45%)
+adding: WordCountReducer.class(in = 1602) (out= 669)(deflated 58%)
+---
+
 24) hadoop jar wordcount.jar WordCountDriver /user/hadoop/input/Questions.csv /user/hadoop/output/wordcount_final
+
+---
+
+---
 
 25) hadoop fs -cat /user/hadoop/output/wordcount_final2/part-r-00000 | sort -k2 -nr | head -n 100
