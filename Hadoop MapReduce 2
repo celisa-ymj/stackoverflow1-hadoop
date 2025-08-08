@@ -6,7 +6,7 @@ Lim Su-Lyn, Ng Jia Wen, Yong Mae Jhin
 1) sudo nano /etc/hosts
 172.31.95.162 master
 172.31.93.112 slave1
-172.31.95.7 slave2
+172.31.90.157 slave2
 
 # after connecting to our master instance, we switched our user from root to Hadoop.
 2) sudo su - hadoop
